@@ -16,12 +16,16 @@ container_name = "baseimagenes"
 
 # Conectar a tu cuenta de Azure Blob Storage
 blob_service_client = BlobServiceClient.from_connection_string(azure_storage_connection_string)
+container_client = blob_service_client.get_container_client(container_name)
 
 @app.route("/")
 def mostrar_imagenes():
     # Obtener una lista de los blobs (imágenes) en el contenedor
-    blobs = blob_service_client.get_container_client(container_name).list_blobs()
+    blobs = container_client.list_blobs()
 
+    for blob in blobs:
+        blob.url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob.name}"
+    
     # Renderizar la plantilla HTML pasando la lista de blobs como contexto
     return render_template("index.html", blobs=blobs)
 
